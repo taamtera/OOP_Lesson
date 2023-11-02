@@ -17,6 +17,7 @@ class AccountDB:
     def insert(self, account):
         index = self.__search_account_db(account.account_number)
         if index == -1:
+            account.set_db(self)
             self.account_database.append(account)
         else:
             print("Account", account.account_number, "already exists")
@@ -29,36 +30,14 @@ class AccountDB:
             print("Account", account_num, "does not exist")
             return None
 
-    def deposit(self, account_num, amount):
-        index = self.__search_account_db(account_num)
+    def delete_account(self, num):
+        index = self.__search_account_db(num)
         if index != -1:
-            print("Depositing", amount, "to",
+            print("Deleting account:",
                   self.account_database[index].account_number)
-            self.account_database[index].deposit(amount)
+            del self.account_database[index]
         else:
-            print(account_num, "invalid account number; no deposit action performed.")
-
-    def withdraw(self, account_num, amount):
-        index = self.__search_account_db(account_num)
-        if index != -1:
-            if self.account_database[index].balance >= amount:
-                print("Withdrawing", amount, "from",
-                      self.account_database[index].account_number)
-                self.account_database[index].withdraw(amount)
-            else:
-                print("withdrawal amount", amount, "exceeds the balance of",
-                      self.account_database[index].balance, "for", account_num, "account.")
-        else:
-            print(account_num, "invalid account number; no withdrawal action performed.")
-
-    def show_account(self, account_num):
-        index = self.__search_account_db(account_num)
-        if index != -1:
-            print("Showing details for",
-                  self.account_database[index].account_number)
-            print(self.account_database[index])
-        else:
-            print(account_num, "invalid account number; nothing to be shown for.")
+            print(num, "invalid account number; nothing to be deleted.")
 
 
 class Account:
@@ -68,6 +47,10 @@ class Account:
         self.type = type
         self.account_name = name
         self.balance = init_balance
+        self.db = None
+        
+    def set_db(self, db):
+        self.db = db
 
     def deposit(self, amount):
         self.balance += amount
@@ -76,6 +59,8 @@ class Account:
         if self.balance >= amount:
             self.balance -= amount
 
+    def delete(self):
+        self.db.delete_account(self.account_number)
     def __str__(self):
         return '{' + f"{self.account_number},{self.type},{self.account_name},{self.balance}" + '}'
 
@@ -95,4 +80,6 @@ print(my_account_DB)
 my_account_DB.search_public("0003").deposit(50)
 print(my_account_DB)
 my_account_DB.search_public("0003").withdraw(100)
+print(my_account_DB)
+my_account_DB.search_public("0004").delete()
 print(my_account_DB)
